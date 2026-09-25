@@ -1,0 +1,2035 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>日本关东之旅 · 7天6晚行程</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+            background: #f5f7fa;
+            color: #2c3e50;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .app-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 16px 24px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+            flex-shrink: 0;
+        }
+
+        .header-row {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .header-row > div { min-width: 0; }
+
+        .place-names-link {
+            flex: none;
+            padding: 8px 12px;
+            border: 1px solid rgba(255, 255, 255, 0.55);
+            border-radius: 9px;
+            color: white;
+            font-size: 13px;
+            font-weight: 600;
+            text-decoration: none;
+            background: rgba(255, 255, 255, 0.12);
+            white-space: nowrap;
+        }
+
+        .place-names-link:hover { background: rgba(255, 255, 255, 0.22); }
+
+        .app-header h1 {
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .app-header .subtitle {
+            font-size: 13px;
+            opacity: 0.9;
+            margin-top: 4px;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: 220px minmax(0, 1fr) minmax(0, 1fr);
+            height: calc(100vh - 72px);
+            gap: 16px;
+            padding: 16px;
+        }
+
+        .panel {
+            min-width: 0;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .panel-header {
+            padding: 16px;
+            border-bottom: 1px solid #eef2f7;
+            font-weight: 600;
+            font-size: 15px;
+            color: #4a5568;
+            background: #fafbfc;
+        }
+
+        /* 第一栏：日期切换 */
+        .day-list {
+            overflow-y: auto;
+            flex: 1;
+            padding: 8px;
+        }
+
+        .overview-button {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 12px 12px 8px 12px;
+            padding: 14px 12px;
+            background: linear-gradient(135deg, #f0f4ff 0%, #e8eeff 100%);
+            border: 1px solid #c3dafe;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .overview-button:hover {
+            background: linear-gradient(135deg, #e8eeff 0%, #d6e0ff 100%);
+            transform: translateY(-1px);
+        }
+
+        .overview-button.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-color: #667eea;
+            color: white;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .overview-button .overview-icon {
+            font-size: 22px;
+            line-height: 1;
+        }
+
+        .overview-button .overview-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: #4c51bf;
+        }
+
+        .overview-button.active .overview-title {
+            color: white;
+        }
+
+        .overview-button .overview-desc {
+            font-size: 12px;
+            color: #718096;
+            margin-top: 2px;
+        }
+
+        .overview-button.active .overview-desc {
+            color: rgba(255, 255, 255, 0.85);
+        }
+
+        .day-item {
+            padding: 14px 12px;
+            margin-bottom: 6px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border-left: 3px solid transparent;
+        }
+
+        .day-item:hover {
+            background: #f0f4ff;
+        }
+
+        .day-item.active {
+            background: #e8eeff;
+            border-left-color: #667eea;
+        }
+
+        .day-item .day-label {
+            font-size: 13px;
+            color: #718096;
+            margin-bottom: 2px;
+        }
+
+        .day-item.active .day-label {
+            color: #5a67d8;
+        }
+
+        .day-item .day-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .day-item .day-date {
+            font-size: 12px;
+            color: #a0aec0;
+            margin-top: 2px;
+        }
+
+        /* 第二栏：详细日程 */
+        .detail-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .detail-header {
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid #eef2f7;
+        }
+
+        .detail-header .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            background: #667eea;
+            color: white;
+            border-radius: 20px;
+            font-size: 12px;
+            margin-bottom: 8px;
+        }
+
+        .detail-header h2 {
+            font-size: 22px;
+            color: #2d3748;
+            margin-bottom: 6px;
+        }
+
+        .detail-header .meta {
+            font-size: 14px;
+            color: #718096;
+        }
+
+        .timeline {
+            position: relative;
+            padding-left: 24px;
+            margin-top: 24px;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 6px;
+            top: 4px;
+            bottom: 4px;
+            width: 2px;
+            background: #e2e8f0;
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -22px;
+            top: 4px;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #cbd5e0;
+            border: 2px solid white;
+            box-shadow: 0 0 0 2px #cbd5e0;
+        }
+
+        .timeline-item.highlight::before {
+            background: #667eea;
+            box-shadow: 0 0 0 2px #667eea;
+        }
+
+        .timeline-item.transport::before {
+            background: #48bb78;
+            box-shadow: 0 0 0 2px #48bb78;
+        }
+
+        .timeline-item .time {
+            font-size: 13px;
+            color: #667eea;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .timeline-item .event {
+            font-size: 15px;
+            color: #2d3748;
+            line-height: 1.6;
+        }
+
+        .timeline-item .note {
+            font-size: 13px;
+            color: #718096;
+            margin-top: 4px;
+            line-height: 1.5;
+        }
+
+        .hotel-card {
+            background: linear-gradient(135deg, #fffaf0 0%, #fff5f5 100%);
+            border: 1px solid #fed7d7;
+            border-radius: 12px;
+            padding: 16px;
+            margin-top: 24px;
+        }
+
+        .hotel-card .hotel-label {
+            font-size: 12px;
+            color: #c05621;
+            font-weight: 600;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .hotel-card .hotel-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: #744210;
+            margin-bottom: 4px;
+        }
+
+        .hotel-card .hotel-info {
+            font-size: 13px;
+            color: #9c4221;
+            line-height: 1.5;
+        }
+
+        .no-hotel {
+            background: #f7fafc;
+            border: 1px dashed #cbd5e0;
+            border-radius: 12px;
+            padding: 16px;
+            margin-top: 24px;
+            text-align: center;
+            color: #718096;
+            font-size: 14px;
+        }
+
+        .place-names { margin-top: 24px; }
+        .place-names h3 { font-size: 16px; margin-bottom: 8px; }
+        .place-names-scroll { overflow-x: auto; margin: 12px 0; }
+        .place-names table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        .place-names th, .place-names td { text-align: left; padding: 10px 8px; border-bottom: 1px solid #e2e8f0; vertical-align: top; }
+        .place-names th { background: #f5f7ff; color: #4a5568; }
+        .place-names td:first-child { width: 35%; }
+        .place-names strong { font-weight: 600; }
+        .place-kana { display: block; margin-top: 4px; color: #667eea; line-height: 1.6; overflow-wrap: anywhere; }
+        .place-names a { color: #5a67d8; }
+
+        /* 第三栏：地图 */
+        #map {
+            flex: 1;
+            width: 100%;
+            min-height: 400px;
+        }
+
+        .leaflet-tooltip.trip-place-label {
+            padding: 3px 7px;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.95);
+            color: #334155;
+            font-size: 12px;
+            font-weight: 600;
+            box-shadow: 0 1px 4px rgba(15, 23, 42, 0.12);
+            pointer-events: none;
+        }
+
+        .route-day-badge {
+            width: 22px;
+            height: 22px;
+            padding: 2px;
+            text-align: center;
+            border: 1px solid currentColor;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.96);
+            font-size: 11px;
+            font-weight: 600;
+            line-height: 16px;
+            white-space: nowrap;
+            box-shadow: 0 1px 4px rgba(15, 23, 42, 0.12);
+        }
+
+        .map-legend {
+            padding: 12px 16px;
+            border-top: 1px solid #eef2f7;
+            background: #fafbfc;
+            font-size: 12px;
+            color: #718096;
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .map-legend span {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .legend-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .legend-dot.start { background: #48bb78; }
+        .legend-dot.stay { background: #667eea; }
+        .legend-dot.visit { background: #ed8936; }
+
+        @media (max-width: 1024px) {
+            body {
+                height: auto;
+                overflow: auto;
+            }
+
+            .app-header {
+                padding: 12px 16px;
+            }
+
+            .app-header h1 {
+                font-size: 18px;
+            }
+
+            .app-header .subtitle {
+                font-size: 12px;
+            }
+
+            .container {
+                display: flex;
+                flex-direction: column;
+                height: auto;
+                min-height: calc(100vh - 64px);
+                gap: 12px;
+                padding: 12px max(12px, env(safe-area-inset-right)) max(16px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
+            }
+
+            .container.overview-mode {
+                display: flex;
+                flex-direction: column;
+            }
+
+            .panel {
+                min-height: 0;
+            }
+
+            .panel:first-child {
+                flex: 0 0 auto;
+            }
+
+            .panel:nth-child(2) {
+                order: 3;
+                flex: none;
+            }
+
+            .panel:nth-child(3) {
+                order: 2;
+                flex: none;
+            }
+
+            .panel-header {
+                padding: 10px 14px;
+                font-size: 14px;
+            }
+
+            .overview-button {
+                margin: 8px 12px;
+                padding: 10px 12px;
+            }
+
+            .overview-button .overview-icon {
+                font-size: 20px;
+            }
+
+            .overview-button .overview-title {
+                font-size: 14px;
+            }
+
+            .overview-button .overview-desc {
+                font-size: 11px;
+            }
+
+            .day-list {
+                display: flex;
+                overflow-x: auto;
+                overflow-y: hidden;
+                gap: 8px;
+                scroll-snap-type: x proximity;
+                padding: 0 12px 12px 12px;
+            }
+
+            .day-item {
+                flex: 0 0 124px;
+                scroll-snap-align: start;
+                padding: 12px;
+                margin-bottom: 0;
+            }
+
+            .day-item .day-label {
+                font-size: 11px;
+            }
+
+            .day-item .day-title {
+                font-size: 14px;
+            }
+
+            .day-item .day-date {
+                font-size: 11px;
+            }
+
+            .detail-content {
+                flex: none;
+                overflow: visible;
+                padding: 16px;
+            }
+
+            .detail-content .note, .hotel-info {
+                line-height: 1.8;
+                overflow-wrap: anywhere;
+            }
+
+            .detail-header h2 {
+                font-size: 20px;
+            }
+
+            .detail-header .meta {
+                font-size: 13px;
+            }
+
+            #map {
+                flex: none;
+                min-height: 340px;
+                height: 48svh;
+                max-height: 520px;
+            }
+
+            .map-legend {
+                padding: 10px 14px;
+                font-size: 11px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .app-header { padding: 13px 16px; }
+            .header-row { align-items: start; gap: 10px; }
+            .place-names-link { padding: 7px 9px; font-size: 12px; }
+            .app-header h1 { font-size: 17px; }
+            .app-header .subtitle { line-height: 1.6; }
+            .overview-button .overview-desc { font-size: 12px; }
+            .day-item .day-date { white-space: nowrap; }
+            .detail-header h2 { font-size: 19px; }
+            .hotel-name { font-size: 16px; overflow-wrap: anywhere; }
+            .leaflet-tooltip.trip-place-label { font-size: 11px; padding: 2px 5px; }
+            .leaflet-touch .leaflet-bar a { width: 40px; height: 40px; line-height: 40px; }
+            .map-legend { gap: 8px 12px; line-height: 1.6; }
+            .place-names th, .place-names td { padding: 10px 6px; }
+        }
+    </style>
+</head>
+<body>
+    <header class="app-header">
+        <div class="header-row">
+            <div>
+                <h1>🗾 日本关东之旅</h1>
+                <div class="subtitle">2025年9月26日 - 10月2日 · 7天6晚 · 成田 → 东京 → 热海 → 成田</div>
+            </div>
+            <a class="place-names-link" href="japan-trip-place-names.html">景点日文名</a>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- 第一栏：日期切换 -->
+        <div class="panel">
+            <div class="panel-header">📅 行程安排</div>
+            <div class="overview-button active" id="overviewButton">
+                <div class="overview-icon">🗺️</div>
+                <div class="overview-text">
+                    <div class="overview-title">行程总揽</div>
+                    <div class="overview-desc">9/26 - 10/2 · 完整路线</div>
+                </div>
+            </div>
+            <div class="day-list" id="dayList"></div>
+        </div>
+
+        <!-- 第二栏：详细日程 -->
+        <div class="panel">
+            <div class="panel-header" id="detailPanelTitle">📝 行程总览</div>
+            <div class="detail-content" id="detailContent"></div>
+        </div>
+
+        <!-- 第三栏：地图 -->
+        <div class="panel">
+            <div class="panel-header">🗺️ 行程轨迹</div>
+            <div id="map"></div>
+            <div class="map-legend">
+                <span><span class="legend-dot start"></span> 起止/机场</span>
+                <span><span class="legend-dot stay"></span> 住宿地</span>
+                <span><span class="legend-dot visit"></span> 游览地</span>
+                <span style="color: #667eea;">➤ 去程 / 途中</span>
+                <span style="color: #0d9488;">➤ 返程</span>
+                <span id="mapRouteNote">线路为景点间示意，位置为概略标注；实际交通请按导航。</span>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        const itinerary = [
+    {
+        "day": 1,
+        "date": "9月26日（周五）",
+        "title": "抵达东京",
+        "badge": "Day 1",
+        "meta": "成田机场入境 → 前往东京市区",
+        "events": [
+            {
+                "time": "18:00",
+                "event": "抵达成田国际机场",
+                "note": "按截图的抵达时间安排，办理入境并提取行李。",
+                "type": "highlight"
+            },
+            {
+                "time": "19:30–20:00",
+                "event": "京成 Skyliner → 京成上野",
+                "note": "根据出关时间购买合适班次，下车后步行前往酒店。",
+                "type": "transport"
+            },
+            {
+                "time": "21:00–21:30",
+                "event": "入住三井花园饭店上野",
+                "note": "先放行李、休息；如仍有精力，可在上野附近吃宵夜，不另排远处景点。",
+                "type": "highlight"
+            }
+        ],
+        "hotel": {
+            "location": "东京 · 三井花园饭店上野",
+            "nights": "第 1 晚",
+            "note": "地址：东京都台东区东上野 3-19-7。JR 上野站浅草出口步行约 2 分钟。"
+        },
+        "mapPoints": [
+            {
+                "name": "成田国际机场",
+                "lat": 35.7647,
+                "lng": 140.3864,
+                "type": "start"
+            },
+            {
+                "name": "三井花园饭店上野",
+                "lat": 35.71188,
+                "lng": 139.77811,
+                "type": "stay"
+            }
+        ],
+        "mapCenter": [
+            35.72,
+            140.02
+        ],
+        "mapZoom": 8,
+        "routeOrder": [
+            0,
+            1
+        ],
+        "routeBends": [
+            0.18
+        ]
+    },
+    {
+        "day": 2,
+        "date": "9月27日（周六）",
+        "title": "东京一日游",
+        "badge": "Day 2",
+        "meta": "上野 → 秋叶原 → 银座 → 涩谷 → 上野",
+        "events": [
+            {
+                "time": "09:30–12:00",
+                "event": "阿美横丁 → 上野公园",
+                "note": "从酒店步行出发，逛阿美横丁，再到不忍池、上野东照宫一带散步。",
+                "type": "highlight"
+            },
+            {
+                "time": "12:00–13:30",
+                "event": "上野附近午餐",
+                "note": "选择定食或拉面；购物可按营业时间灵活挪到午餐前后。",
+                "type": "highlight"
+            },
+            {
+                "time": "13:30–15:00",
+                "event": "秋叶原",
+                "note": "乘 JR 前往秋叶原，逛电器、动漫和兴趣店。",
+                "type": "highlight"
+            },
+            {
+                "time": "15:00–17:00",
+                "event": "银座",
+                "note": "逛优衣库、银座三越等；为涩谷预约时段留出交通时间。",
+                "type": "highlight"
+            },
+            {
+                "time": "17:30–晚上",
+                "event": "涩谷十字路口 · 忠犬八公 · SHIBUYA SKY",
+                "note": "SHIBUYA SKY 提前购买指定日期和时段的门票；以预约时间安排晚餐，结束后返回上野。",
+                "type": "highlight"
+            }
+        ],
+        "hotel": {
+            "location": "东京 · 三井花园饭店上野",
+            "nights": "第 2 晚",
+            "note": "地址：东京都台东区东上野 3-19-7。继续入住三井花园饭店上野。"
+        },
+        "mapPoints": [
+            {
+                "name": "三井花园饭店上野",
+                "lat": 35.71188,
+                "lng": 139.77811,
+                "type": "stay"
+            },
+            {
+                "name": "阿美横丁",
+                "lat": 35.709,
+                "lng": 139.7746,
+                "type": "visit"
+            },
+            {
+                "name": "上野公园",
+                "lat": 35.7146,
+                "lng": 139.7732,
+                "type": "visit"
+            },
+            {
+                "name": "秋叶原",
+                "lat": 35.6984,
+                "lng": 139.7731,
+                "type": "visit"
+            },
+            {
+                "name": "银座",
+                "lat": 35.6719,
+                "lng": 139.7656,
+                "type": "visit"
+            },
+            {
+                "name": "涩谷 / SHIBUYA SKY",
+                "lat": 35.6585,
+                "lng": 139.7022,
+                "type": "visit"
+            }
+        ],
+        "mapCenter": [
+            35.69,
+            139.75
+        ],
+        "mapZoom": 12,
+        "routeOrder": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            0
+        ],
+        "routeBends": [
+            0.18,
+            0.18,
+            0.18,
+            0.18,
+            0.18,
+            0.85
+        ]
+    },
+    {
+        "day": 3,
+        "date": "9月28日（周日）",
+        "title": "富士山一日游",
+        "badge": "Day 3",
+        "meta": "东京出发 · 按一日团安排 · 当天返回上野",
+        "events": [
+            {
+                "time": "出发前",
+                "event": "确认集合点和时间",
+                "note": "按一日游订单或供应商通知核对；截图未列具体停靠点，不另编固定景点顺序。",
+                "type": "highlight"
+            },
+            {
+                "time": "全天",
+                "event": "富士山一日游",
+                "note": "景点、午餐、交通和游览时长以实际团单为准。带薄外套、现金，出发前查看天气。",
+                "type": "highlight"
+            },
+            {
+                "time": "傍晚 / 晚上",
+                "event": "返回东京 → 三井花园饭店上野",
+                "note": "根据回程时间决定是否在酒店附近用餐或散步。",
+                "type": "highlight"
+            }
+        ],
+        "hotel": {
+            "location": "东京 · 三井花园饭店上野",
+            "nights": "第 3 晚",
+            "note": "地址：东京都台东区东上野 3-19-7。一日游后返回三井花园饭店上野。"
+        },
+        "mapPoints": [
+            {
+                "name": "三井花园饭店上野",
+                "lat": 35.71188,
+                "lng": 139.77811,
+                "type": "stay"
+            },
+            {
+                "name": "富士山（一日游）",
+                "lat": 35.5014,
+                "lng": 138.7674,
+                "type": "visit"
+            }
+        ],
+        "mapCenter": [
+            35.52,
+            139.2
+        ],
+        "mapZoom": 9,
+        "mapNote": "富士山方向为概略示意，集合点及停靠景点以实际团单为准。",
+        "routeOrder": [
+            0,
+            1,
+            0
+        ],
+        "routeBends": [
+            0.18,
+            0.18
+        ]
+    },
+    {
+        "day": 4,
+        "date": "9月29日（周一）",
+        "title": "镰仓一日游",
+        "badge": "Day 4",
+        "meta": "上野 → 大船 → 湘南江之岛 → 镰仓 → 上野",
+        "events": [
+            {
+                "time": "早上",
+                "event": "上野 → 大船 → 湘南江之岛",
+                "note": "乘 JR 到大船，换乘湘南单轨电车至湘南江之岛站。",
+                "type": "transport"
+            },
+            {
+                "time": "10:00",
+                "event": "江之岛散步",
+                "note": "从湘南江之岛站前往江之岛，桥边、青铜鸟居一带散步，按体力控制停留时间。",
+                "type": "highlight"
+            },
+            {
+                "time": "11:00",
+                "event": "镰仓高校前",
+                "note": "沿海步行或乘江之电到镰仓高校前，拍照时遵守平交道现场指示。",
+                "type": "highlight"
+            },
+            {
+                "time": "12:30",
+                "event": "七里滨午餐",
+                "note": "海边用餐，可参考截图中的 BAKERY / DRIVE-IN、Double Doors 等候选店；实际店址、营业及预约需再确认。",
+                "type": "highlight"
+            },
+            {
+                "time": "13:30",
+                "event": "长谷寺 → 高德院大佛",
+                "note": "乘江之电至长谷站，步行游览长谷寺和高德院；门票以现场公告为准。",
+                "type": "highlight"
+            },
+            {
+                "time": "15:30",
+                "event": "镰仓站 → 小町通",
+                "note": "乘江之电至镰仓站，逛小町通商店街。",
+                "type": "highlight"
+            },
+            {
+                "time": "16:30",
+                "event": "鹤冈八幡宫",
+                "note": "从小町通继续步行前往参拜；如前面游览较慢，可缩短购物时间。",
+                "type": "highlight"
+            },
+            {
+                "time": "17:30 左右",
+                "event": "镰仓站 → 上野",
+                "note": "乘 JR 返回东京，继续入住三井花园饭店上野。",
+                "type": "transport"
+            }
+        ],
+        "hotel": {
+            "location": "东京 · 三井花园饭店上野",
+            "nights": "第 4 晚",
+            "note": "地址：东京都台东区东上野 3-19-7。连续第 4 晚入住三井花园饭店上野。"
+        },
+        "mapPoints": [
+            {
+                "name": "三井花园饭店上野",
+                "lat": 35.71188,
+                "lng": 139.77811,
+                "type": "stay"
+            },
+            {
+                "name": "大船站",
+                "lat": 35.354,
+                "lng": 139.531,
+                "type": "visit"
+            },
+            {
+                "name": "湘南江之岛站",
+                "lat": 35.3113,
+                "lng": 139.4875,
+                "type": "visit"
+            },
+            {
+                "name": "江之岛",
+                "lat": 35.3002,
+                "lng": 139.4803,
+                "type": "visit"
+            },
+            {
+                "name": "镰仓高校前",
+                "lat": 35.3069,
+                "lng": 139.5005,
+                "type": "visit"
+            },
+            {
+                "name": "七里滨",
+                "lat": 35.3067,
+                "lng": 139.5103,
+                "type": "visit"
+            },
+            {
+                "name": "长谷寺",
+                "lat": 35.3128,
+                "lng": 139.5332,
+                "type": "visit"
+            },
+            {
+                "name": "高德院大佛",
+                "lat": 35.3167,
+                "lng": 139.5357,
+                "type": "visit"
+            },
+            {
+                "name": "镰仓站",
+                "lat": 35.319,
+                "lng": 139.5504,
+                "type": "visit"
+            },
+            {
+                "name": "小町通",
+                "lat": 35.322,
+                "lng": 139.5525,
+                "type": "visit"
+            },
+            {
+                "name": "鹤冈八幡宫",
+                "lat": 35.3258,
+                "lng": 139.5564,
+                "type": "visit"
+            }
+        ],
+        "mapCenter": [
+            35.49,
+            139.61
+        ],
+        "mapZoom": 10,
+        "routeOrder": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            0
+        ],
+        "routeBends": [
+            0.18,
+            0.18,
+            0.18,
+            0.18,
+            0.18,
+            0.18,
+            0.18,
+            0.18,
+            0.18,
+            0.18,
+            0.18
+        ]
+    },
+    {
+        "day": 5,
+        "date": "9月30日（周二）",
+        "title": "东京 → 热海",
+        "badge": "Day 5",
+        "meta": "上野退房 → 东京站换乘 → 热海 → 贯一酒店",
+        "events": [
+            {
+                "time": "08:00–09:00",
+                "event": "三井花园饭店上野退房",
+                "note": "带好行李，从上野先到东京站，再换乘东海道新干线前往热海。",
+                "type": "transport"
+            },
+            {
+                "time": "上午",
+                "event": "抵达热海，寄存行李",
+                "note": "在车站或与酒店确认寄存；实际抵达时间按所选列车安排，不按截图的上野直达 40 分钟计算。",
+                "type": "highlight"
+            },
+            {
+                "time": "上午至中午",
+                "event": "站前商店街 → 海鲜午餐",
+                "note": "先逛平和通、仲见世商店街；站前足汤「家康の湯」仅在开放时顺路体验。",
+                "type": "highlight"
+            },
+            {
+                "time": "午后",
+                "event": "热海银座商店街 · 海边散步",
+                "note": "银座商店街在市区内，往酒店方向慢慢逛，可顺路到阳光海滩。",
+                "type": "highlight"
+            },
+            {
+                "time": "15:00–16:00",
+                "event": "入住贯一酒店",
+                "note": "安排泡汤和休息；晚餐及私汤是否包含、使用时间以预订方案和酒店规定为准。",
+                "type": "highlight"
+            }
+        ],
+        "hotel": {
+            "location": "热海 · 贯一酒店",
+            "nights": "第 5 晚",
+            "note": "地址：静冈县热海市东海岸町 1-2。入住贯一酒店（ホテル貫一）。"
+        },
+        "mapPoints": [
+            {
+                "name": "三井花园饭店上野",
+                "lat": 35.71188,
+                "lng": 139.77811,
+                "type": "stay"
+            },
+            {
+                "name": "东京站",
+                "lat": 35.6812,
+                "lng": 139.7671,
+                "type": "visit"
+            },
+            {
+                "name": "热海站",
+                "lat": 35.1036,
+                "lng": 139.0778,
+                "type": "visit"
+            },
+            {
+                "name": "热海银座商店街",
+                "lat": 35.0968,
+                "lng": 139.0735,
+                "type": "visit"
+            },
+            {
+                "name": "贯一酒店",
+                "lat": 35.097565,
+                "lng": 139.074158,
+                "type": "stay"
+            }
+        ],
+        "mapCenter": [
+            35.4,
+            139.4
+        ],
+        "mapZoom": 9,
+        "routeOrder": [
+            0,
+            1,
+            2,
+            3,
+            4
+        ],
+        "routeBends": [
+            0.18,
+            0.18,
+            0.18,
+            0.18
+        ]
+    },
+    {
+        "day": 6,
+        "date": "10月1日（周三）",
+        "title": "伊豆高原一日游",
+        "badge": "Day 6",
+        "meta": "贯一酒店 → 大室山 → 伊豆高原 → 城崎海岸 → 贯一酒店",
+        "events": [
+            {
+                "time": "早餐后",
+                "event": "热海 → 伊东 → 伊豆高原",
+                "note": "乘 JR 伊东线、伊豆急行线；可乘直通列车或按班次在伊东换乘。预留车程和候车时间，以当日时刻表为准。",
+                "type": "transport"
+            },
+            {
+                "time": "上午",
+                "event": "大室山",
+                "note": "从伊豆高原站搭巴士至「シャボテン公園・大室山」方向终点，或乘出租车。按缆车运营与天气安排登山和火山口散步。",
+                "type": "highlight"
+            },
+            {
+                "time": "中午",
+                "event": "伊豆高原站附近午餐",
+                "note": "品尝金目鲷等当地料理，留出餐厅排队和下一段交通时间。",
+                "type": "highlight"
+            },
+            {
+                "time": "下午",
+                "event": "城崎海岸 · 门胁吊桥",
+                "note": "乘巴士或出租车前往海岸，游览吊桥和海景步道；按天气与体力安排步行。",
+                "type": "highlight"
+            },
+            {
+                "time": "傍晚",
+                "event": "伊豆高原 / 城崎海岸站 → 热海",
+                "note": "查询回程班次后返回热海；如恰逢黑船电车或金目鲷列车运行，可作为沿途体验，不为追车额外绕远。",
+                "type": "transport"
+            },
+            {
+                "time": "晚上",
+                "event": "返回贯一酒店续住",
+                "note": "在酒店或附近用晚餐、泡汤并整理行李。今晚不退房，次日再前往成田机场。",
+                "type": "highlight"
+            }
+        ],
+        "hotel": {
+            "location": "热海 · 贯一酒店",
+            "nights": "第 6 晚",
+            "note": "地址：静冈县热海市东海岸町 1-2。伊豆高原当天往返，继续入住贯一酒店。"
+        },
+        "mapPoints": [
+            {
+                "name": "贯一酒店",
+                "lat": 35.097565,
+                "lng": 139.074158,
+                "type": "stay"
+            },
+            {
+                "name": "伊豆高原站",
+                "lat": 34.8774,
+                "lng": 139.1087,
+                "type": "visit"
+            },
+            {
+                "name": "大室山",
+                "lat": 34.903,
+                "lng": 139.0945,
+                "type": "visit"
+            },
+            {
+                "name": "城崎海岸 · 门胁吊桥",
+                "lat": 34.8906,
+                "lng": 139.1372,
+                "type": "visit"
+            }
+        ],
+        "mapCenter": [
+            34.99,
+            139.1
+        ],
+        "mapZoom": 10,
+        "mapNote": "伊豆高原线路为景点间示意；步行、巴士和列车请按实际导航衔接。",
+        "routeOrder": [
+            0,
+            1,
+            2,
+            1,
+            3,
+            0
+        ],
+        "routeBends": [
+            0.18,
+            0.18,
+            0,
+            0.18,
+            0.18
+        ]
+    },
+    {
+        "day": 7,
+        "date": "10月2日（周四）",
+        "title": "热海 → 成田机场 · 回国",
+        "badge": "Day 7",
+        "meta": "贯一酒店退房 → 东京站 → 成田机场 · 15:30 航班",
+        "events": [
+            {
+                "time": "08:00 左右",
+                "event": "贯一酒店退房",
+                "note": "根据已选列车提前出发，预留到热海站的交通时间。",
+                "type": "highlight"
+            },
+            {
+                "time": "09:00 左右",
+                "event": "热海 → 东京站 → 成田机场",
+                "note": "先乘东海道新干线到东京，再换乘成田特快 N’EX；出发前确认停站、换乘和指定席。",
+                "type": "transport"
+            },
+            {
+                "time": "11:30–12:00 目标",
+                "event": "抵达成田机场",
+                "note": "为截图所列 15:30 航班预留值机、托运、出境时间，具体截止时间以航空公司为准。",
+                "type": "highlight"
+            },
+            {
+                "time": "15:30",
+                "event": "航班起飞，回国",
+                "note": "时间按截图更新；最终以机票和机场通知为准。",
+                "type": "highlight"
+            }
+        ],
+        "hotel": null,
+        "mapPoints": [
+            {
+                "name": "贯一酒店",
+                "lat": 35.097565,
+                "lng": 139.074158,
+                "type": "stay"
+            },
+            {
+                "name": "东京站",
+                "lat": 35.6812,
+                "lng": 139.7671,
+                "type": "visit"
+            },
+            {
+                "name": "成田国际机场",
+                "lat": 35.7647,
+                "lng": 140.3864,
+                "type": "start"
+            }
+        ],
+        "mapCenter": [
+            35.43,
+            139.73
+        ],
+        "mapZoom": 8,
+        "routeOrder": [
+            0,
+            1,
+            2
+        ],
+        "routeBends": [
+            0.18,
+            0.18
+        ]
+    }
+];
+
+        const overview = {
+    "isOverview": true,
+    "title": "行程总揽",
+    "badge": "总揽",
+    "date": "2025年9月26日 - 10月2日",
+    "meta": "7 天 6 晚 · 东京 4 晚 · 热海 2 晚 · 伊豆高原当天往返",
+    "summary": [
+        {
+            "label": "行程时长",
+            "value": "7 天 6 晚"
+        },
+        {
+            "label": "东京住宿",
+            "value": "三井花园饭店上野 · 4 晚"
+        },
+        {
+            "label": "热海住宿",
+            "value": "贯一酒店 · 2 晚"
+        },
+        {
+            "label": "移动路线",
+            "value": "成田机场 → 东京 → 富士山 → 东京 → 镰仓 → 东京 → 热海 → 伊豆高原 → 热海 → 成田机场"
+        }
+    ],
+    "daySummaries": [
+        {
+            "day": 1,
+            "title": "抵达东京",
+            "description": "18:00 抵达成田，出关后乘京成 Skyliner 到上野，入住三井花园饭店上野。晚上只安排酒店附近用餐和休息。"
+        },
+        {
+            "day": 2,
+            "title": "东京一日游",
+            "description": "从阿美横丁、上野公园开始，午后依次逛秋叶原和银座，傍晚前往涩谷十字路口、忠犬八公像及 SHIBUYA SKY，晚上回上野。"
+        },
+        {
+            "day": 3,
+            "title": "富士山一日游",
+            "description": "按富士山一日游团单安排集合、景点和交通。带薄外套与现金，晚上返回三井花园饭店上野；具体停靠点待团单确认。"
+        },
+        {
+            "day": 4,
+            "title": "镰仓一日游",
+            "description": "经大船换乘湘南单轨电车到江之岛，再沿海前往镰仓高校前、七里滨，午后游长谷寺和大佛，最后逛小町通、鹤冈八幡宫，从镰仓站返回上野。"
+        },
+        {
+            "day": 5,
+            "title": "东京 → 热海",
+            "description": "从东京酒店退房，经东京站转车到热海。寄存行李后逛站前商店街、吃海鲜，再到热海银座和海边散步，15:00–16:00 入住贯一酒店。"
+        },
+        {
+            "day": 6,
+            "title": "伊豆高原一日游",
+            "description": "从热海坐车到伊豆高原，上午游大室山，中午品尝当地料理，下午逛城崎海岸和门胁吊桥。傍晚回热海，在贯一酒店续住第二晚。"
+        },
+        {
+            "day": 7,
+            "title": "热海 → 成田机场 · 回国",
+            "description": "早上退房，热海经东京站换乘成田特快，目标 11:30–12:00 到达机场，为 15:30 航班预留办理手续的时间。"
+        }
+    ],
+    "mapPoints": [
+        {
+            "name": "成田国际机场",
+            "lat": 35.7647,
+            "lng": 140.3864,
+            "type": "start"
+        },
+        {
+            "name": "三井花园饭店上野",
+            "lat": 35.71188,
+            "lng": 139.77811,
+            "type": "stay"
+        },
+        {
+            "name": "富士山（一日游）",
+            "lat": 35.5014,
+            "lng": 138.7674,
+            "type": "visit"
+        },
+        {
+            "name": "镰仓 / 江之岛",
+            "lat": 35.319,
+            "lng": 139.53,
+            "type": "visit"
+        },
+        {
+            "name": "贯一酒店",
+            "lat": 35.097565,
+            "lng": 139.074158,
+            "type": "stay"
+        },
+        {
+            "name": "伊豆高原",
+            "lat": 34.8774,
+            "lng": 139.1087,
+            "type": "visit"
+        }
+    ],
+    "mapCenter": [
+        35.3,
+        139.55
+    ],
+    "mapZoom": 8,
+    "routeOrder": [
+        0,
+        1,
+        2,
+        1,
+        3,
+        1,
+        4,
+        5,
+        4,
+        0
+    ],
+    "routeDays": [
+        1,
+        3,
+        3,
+        4,
+        4,
+        5,
+        6,
+        6,
+        7
+    ],
+    "routeBends": [
+        0.18,
+        0.18,
+        0,
+        0.18,
+        0.18,
+        0.18,
+        0.18,
+        0.18,
+        0.18
+    ]
+};
+
+        const placeNames = [
+    {
+        "zh": "成田国际机场",
+        "ja": "成田国際空港",
+        "kana": "なりたこくさいくうこう",
+        "days": [
+            1,
+            7
+        ]
+    },
+    {
+        "zh": "三井花园饭店上野",
+        "ja": "三井ガーデンホテル上野",
+        "kana": "みついガーデンホテルうえの",
+        "days": [
+            1,
+            2,
+            3,
+            4,
+            5
+        ]
+    },
+    {
+        "zh": "上野",
+        "ja": "上野",
+        "kana": "うえの",
+        "days": [
+            1,
+            2,
+            3,
+            4,
+            5
+        ]
+    },
+    {
+        "zh": "京成上野站",
+        "ja": "京成上野駅",
+        "kana": "けいせいうえのえき",
+        "days": [
+            1
+        ]
+    },
+    {
+        "zh": "阿美横丁",
+        "ja": "アメ横",
+        "kana": "アメよこ",
+        "days": [
+            1,
+            2
+        ]
+    },
+    {
+        "zh": "上野公园",
+        "ja": "上野恩賜公園",
+        "kana": "うえのおんしこうえん",
+        "days": [
+            2
+        ]
+    },
+    {
+        "zh": "不忍池",
+        "ja": "不忍池",
+        "kana": "しのばずのいけ",
+        "days": [
+            2
+        ]
+    },
+    {
+        "zh": "上野东照宫",
+        "ja": "上野東照宮",
+        "kana": "うえのとうしょうぐう",
+        "days": [
+            2
+        ]
+    },
+    {
+        "zh": "秋叶原",
+        "ja": "秋葉原",
+        "kana": "あきはばら",
+        "days": [
+            2
+        ]
+    },
+    {
+        "zh": "银座",
+        "ja": "銀座",
+        "kana": "ぎんざ",
+        "days": [
+            2
+        ]
+    },
+    {
+        "zh": "涩谷",
+        "ja": "渋谷",
+        "kana": "しぶや",
+        "days": [
+            2
+        ]
+    },
+    {
+        "zh": "忠犬八公像",
+        "ja": "忠犬ハチ公像",
+        "kana": "ちゅうけんハチこうぞう",
+        "days": [
+            2
+        ]
+    },
+    {
+        "zh": "涩谷观景台",
+        "ja": "SHIBUYA SKY",
+        "kana": "シブヤスカイ",
+        "days": [
+            2
+        ]
+    },
+    {
+        "zh": "富士山",
+        "ja": "富士山",
+        "kana": "ふじさん",
+        "days": [
+            3
+        ]
+    },
+    {
+        "zh": "大船站",
+        "ja": "大船駅",
+        "kana": "おおふなえき",
+        "days": [
+            4
+        ]
+    },
+    {
+        "zh": "湘南单轨电车",
+        "ja": "湘南モノレール",
+        "kana": "しょうなんモノレール",
+        "days": [
+            4
+        ]
+    },
+    {
+        "zh": "湘南江之岛站",
+        "ja": "湘南江の島駅",
+        "kana": "しょうなんえのしまえき",
+        "days": [
+            4
+        ]
+    },
+    {
+        "zh": "江之岛",
+        "ja": "江の島",
+        "kana": "えのしま",
+        "days": [
+            4
+        ]
+    },
+    {
+        "zh": "镰仓高校前",
+        "ja": "鎌倉高校前駅",
+        "kana": "かまくらこうこうまええき",
+        "days": [
+            4
+        ]
+    },
+    {
+        "zh": "七里滨",
+        "ja": "七里ヶ浜",
+        "kana": "しちりがはま",
+        "days": [
+            4
+        ]
+    },
+    {
+        "zh": "长谷寺",
+        "ja": "長谷寺",
+        "kana": "はせでら",
+        "days": [
+            4
+        ]
+    },
+    {
+        "zh": "高德院大佛",
+        "ja": "高徳院・鎌倉大仏",
+        "kana": "こうとくいん・かまくらだいぶつ",
+        "days": [
+            4
+        ]
+    },
+    {
+        "zh": "小町通",
+        "ja": "小町通り",
+        "kana": "こまちどおり",
+        "days": [
+            4
+        ]
+    },
+    {
+        "zh": "鹤冈八幡宫",
+        "ja": "鶴岡八幡宮",
+        "kana": "つるがおかはちまんぐう",
+        "days": [
+            4
+        ]
+    },
+    {
+        "zh": "镰仓站",
+        "ja": "鎌倉駅",
+        "kana": "かまくらえき",
+        "days": [
+            4
+        ]
+    },
+    {
+        "zh": "江之电",
+        "ja": "江ノ電",
+        "kana": "えのでん",
+        "days": [
+            4
+        ]
+    },
+    {
+        "zh": "东京站",
+        "ja": "東京駅",
+        "kana": "とうきょうえき",
+        "days": [
+            5,
+            7
+        ]
+    },
+    {
+        "zh": "热海站",
+        "ja": "熱海駅",
+        "kana": "あたみえき",
+        "days": [
+            5,
+            6,
+            7
+        ]
+    },
+    {
+        "zh": "贯一酒店",
+        "ja": "ホテル貫一",
+        "kana": "ホテルかんいち",
+        "days": [
+            5,
+            6,
+            7
+        ]
+    },
+    {
+        "zh": "家康之汤",
+        "ja": "家康の湯",
+        "kana": "いえやすのゆ",
+        "days": [
+            5
+        ]
+    },
+    {
+        "zh": "热海银座商店街",
+        "ja": "熱海銀座商店街",
+        "kana": "あたみぎんざしょうてんがい",
+        "days": [
+            5
+        ]
+    },
+    {
+        "zh": "热海阳光海滩",
+        "ja": "熱海サンビーチ",
+        "kana": "あたみサンビーチ",
+        "days": [
+            5
+        ]
+    },
+    {
+        "zh": "伊东站",
+        "ja": "伊東駅",
+        "kana": "いとうえき",
+        "days": [
+            6
+        ]
+    },
+    {
+        "zh": "伊豆高原站",
+        "ja": "伊豆高原駅",
+        "kana": "いずこうげんえき",
+        "days": [
+            6
+        ]
+    },
+    {
+        "zh": "大室山",
+        "ja": "大室山",
+        "kana": "おおむろやま",
+        "days": [
+            6
+        ]
+    },
+    {
+        "zh": "城崎海岸",
+        "ja": "城ヶ崎海岸",
+        "kana": "じょうがさきかいがん",
+        "days": [
+            6
+        ]
+    },
+    {
+        "zh": "门胁吊桥",
+        "ja": "門脇つり橋",
+        "kana": "かどわきつりばし",
+        "days": [
+            6
+        ]
+    },
+    {
+        "zh": "金目鲷",
+        "ja": "金目鯛",
+        "kana": "きんめだい",
+        "days": [
+            6
+        ]
+    },
+    {
+        "zh": "成田特快",
+        "ja": "成田エクスプレス",
+        "kana": "なりたエクスプレス",
+        "days": [
+            7
+        ]
+    }
+];
+
+        function renderPlaceNames(day) {
+            const places = day ? placeNames.filter(p => p.days.includes(day)) : placeNames;
+            return `<section class="place-names">
+                <h3>日语地名与假名</h3>
+                <p class="note">问路或查导航时可出示日语名；假名用于读音，外来语保留片假名。</p>
+                <div class="place-names-scroll"><table>
+                    <thead><tr><th>中文名</th><th>日语名 / 假名</th></tr></thead>
+                    <tbody>${places.map(p => `<tr><td>${p.zh}</td><td lang="ja"><strong>${p.ja}</strong><span class="place-kana">${p.kana}</span></td></tr>`).join('')}</tbody>
+                </table></div>
+                <p class="note">名称参考：<a href="https://www.hachimangu.or.jp/" target="_blank" rel="noopener noreferrer">鶴岡八幡宮</a> · <a href="https://omuroyama.com/" target="_blank" rel="noopener noreferrer">大室山</a> · <a href="https://ataminews.gr.jp/" target="_blank" rel="noopener noreferrer">热海旅游官网</a></p>
+            </section>`;
+        }
+
+        let map;
+        let markers = [];
+        let routeLine = null;
+
+        function initMap() {
+            map = L.map('map').setView([35.45, 139.2], 8);
+            L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
+                minZoom: 0,
+                maxNativeZoom: 16,
+                maxZoom: 18,
+                attribution: 'Tiles &copy; <a href="https://www.esri.com/">Esri</a> &mdash; Esri, DeLorme, NAVTEQ'
+            }).addTo(map);
+        }
+
+        const colors = {
+            start: '#48bb78',
+            stay: '#667eea',
+            visit: '#ed8936'
+        };
+
+        function clearMapLayers() {
+            markers.forEach(m => map.removeLayer(m));
+            markers = [];
+            if (routeLine) {
+                map.removeLayer(routeLine);
+                routeLine = null;
+            }
+        }
+
+        function drawMarkers(pointsData) {
+            const seenPlaces = new Set();
+            pointsData.forEach(point => {
+                const placeKey = JSON.stringify([point.name, point.lat, point.lng]);
+                if (seenPlaces.has(placeKey)) return;
+                seenPlaces.add(placeKey);
+                const marker = L.circleMarker([point.lat, point.lng], {
+                    radius: 9,
+                    fillColor: colors[point.type] || '#718096',
+                    color: '#ffffff',
+                    weight: 2,
+                    opacity: 1,
+                    fillOpacity: 0.9
+                }).addTo(map);
+
+                const label = document.createElement('span');
+                label.textContent = point.name;
+                marker.bindTooltip(label, {
+                    permanent: true,
+                    direction: 'top',
+                    offset: [0, -11],
+                    opacity: 1,
+                    className: 'trip-place-label'
+                });
+                marker.bindPopup(`<b>${point.name}</b><br>${point.type === 'start' ? '起止/机场' : point.type === 'stay' ? '住宿地' : '游览地'}`);
+                markers.push(marker);
+            });
+        }
+
+        function getRoutePoints(data) {
+            return data.routeOrder.map(index => data.mapPoints[index]);
+        }
+
+        function drawRoute(data) {
+            const points = getRoutePoints(data);
+            const overviewDays = data.routeDays;
+            // 按总览各段分配弧度：热海转场与机场返程绕开中间的日游线路。
+            const overviewBends = data.routeBends || [];
+
+            const labeledDays = new Set();
+            routeLine = L.layerGroup().addTo(map);
+            for (let i = 1; i < points.length; i++) {
+                const from = points[i - 1];
+                const to = points[i];
+                const day = data.isOverview ? overviewDays[i - 1] : data.day;
+                const returning = (to.type === 'stay' && from.type === 'visit') || to.type === 'start';
+                const color = returning ? '#0d9488' : '#667eea';
+                const start = map.project([from.lat, from.lng], 10);
+                const end = map.project([to.lat, to.lng], 10);
+                const dx = end.x - start.x;
+                const dy = end.y - start.y;
+                if (dx === 0 && dy === 0) continue;
+                // 反向路段使用相同符号的弧度，自然落在连线两侧。
+                const bend = (data.isOverview ? overviewBends[i - 1] : data.routeBends?.[i - 1]) ?? 0.18;
+                const control = L.point((start.x + end.x) / 2 - dy * bend,
+                    (start.y + end.y) / 2 + dx * bend);
+                const curve = Array.from({ length: 25 }, (_, n) => {
+                    const t = n / 24;
+                    return map.unproject(L.point(
+                        (1 - t) ** 2 * start.x + 2 * (1 - t) * t * control.x + t ** 2 * end.x,
+                        (1 - t) ** 2 * start.y + 2 * (1 - t) * t * control.y + t ** 2 * end.y
+                    ), 10);
+                });
+                const label = `第 ${day} 天：${from.name} → ${to.name}${returning ? '（返程）' : ''}`;
+                L.polyline(curve, {
+                    color, weight: 3, opacity: 0.85,
+                    dashArray: returning ? '4, 7' : '8, 7'
+                }).bindTooltip(label, { sticky: true }).addTo(routeLine);
+                const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+                L.marker(curve[12], {
+                    icon: L.divIcon({
+                        className: 'route-direction',
+                        html: `<span style="display:block;color:${color};font-size:18px;line-height:20px;text-align:center;transform:rotate(${angle}deg)">➤</span>`,
+                        iconSize: [20, 20], iconAnchor: [10, 10]
+                    }),
+                    keyboard: false, interactive: false
+                }).addTo(routeLine);
+                if (!labeledDays.has(day) && !(data.isOverview && [2].includes(day))) {
+                    labeledDays.add(day);
+                    L.marker(curve[15], {
+                        icon: L.divIcon({
+                            className: 'route-day-label',
+                            html: `<span class="route-day-badge" style="display:block;color:${color}">${day}</span>`,
+                            iconSize: [22, 22], iconAnchor: [11, -5]
+                        }),
+                        keyboard: false
+                    }).bindTooltip(label).addTo(routeLine);
+                }
+            }
+        }
+
+        function updateMap(data) {
+            clearMapLayers();
+            drawMarkers(data.mapPoints);
+            drawRoute(data);
+            document.getElementById('mapRouteNote').textContent = data.mapNote || '线路为景点间示意，位置为概略标注；实际交通请按导航。';
+            if (window.matchMedia('(max-width: 1024px)').matches) {
+                const bounds = L.latLngBounds(data.mapPoints.map(p => [p.lat, p.lng]));
+                routeLine.eachLayer(layer => {
+                    if (layer.getBounds) bounds.extend(layer.getBounds());
+                });
+                map.flyToBounds(bounds, { padding: [45, 45], maxZoom: data.mapZoom, duration: 0.6 });
+            } else {
+                map.flyTo(data.mapCenter, data.mapZoom, { duration: 1.2 });
+            }
+        }
+
+        function renderDayList() {
+            const list = document.getElementById('dayList');
+            list.innerHTML = itinerary.map((item) => `
+                <div class="day-item" data-index="${item.day - 1}">
+                    <div class="day-label">Day ${item.day}</div>
+                    <div class="day-title">${item.title}</div>
+                    <div class="day-date">${item.date}</div>
+                </div>
+            `).join('');
+
+            list.querySelectorAll('.day-item').forEach(el => {
+                el.addEventListener('click', () => {
+                    selectDay(parseInt(el.dataset.index));
+                });
+            });
+        }
+
+        function bindOverviewButton() {
+            document.getElementById('overviewButton').addEventListener('click', selectOverview);
+        }
+
+        function renderOverview() {
+            const detail = document.getElementById('detailContent');
+            const summaryHtml = overview.summary.map(s => `
+                <div class="timeline-item highlight">
+                    <div class="event">${s.label}</div>
+                    <div class="note">${s.value}</div>
+                </div>
+            `).join('');
+
+            const dayListHtml = overview.daySummaries.map(d => `
+                <div class="timeline-item">
+                    <div class="time">Day ${d.day} · ${itinerary[d.day - 1].date}</div>
+                    <div class="event">${d.title}</div>
+                    <div class="note">${d.description}</div>
+                </div>
+            `).join('');
+
+            detail.innerHTML = `
+                <div class="detail-header">
+                    <div class="badge">${overview.badge}</div>
+                    <h2>${overview.title}</h2>
+                    <div class="meta">${overview.date} · ${overview.meta}</div>
+                </div>
+                <div class="hotel-card" style="background: linear-gradient(135deg, #f0f4ff 0%, #e8eeff 100%); border-color: #c3dafe;">
+                    <div class="hotel-label" style="color: #4c51bf;">🗺️ 路线概览</div>
+                    <div class="hotel-name" style="color: #434190;">成田机场 → 东京 → 富士山 → 东京 → 镰仓 → 东京 → 热海 → 伊豆高原 → 热海 → 成田机场</div>
+                    <div class="hotel-info" style="color: #4c51bf;">全程 7 天 6 晚：东京 · 三井花园饭店上野 4 晚；热海 · 贯一酒店 2 晚。</div>
+                </div>
+                <div class="timeline">
+                    ${summaryHtml}
+                </div>
+                <div style="margin-top: 24px; font-weight: 600; color: #4a5568; margin-bottom: 12px;">每日行程描述</div>
+                <div class="timeline">
+                    ${dayListHtml}
+                </div>
+                <section class="place-names">
+                    <h3>交通与预约</h3>
+                    <p class="note">按截图的日期顺序重排，抵达日计为第 1 天。以下时间为行程安排，车次、票价及营业时间出发前确认。</p>
+                    <ul style="padding-left: 20px; line-height: 1.9; font-size: 13px;">
+                        <li><a href="https://www.shibuya-scramble-square.com/sky/ticket/" target="_blank" rel="noopener noreferrer">SHIBUYA SKY 官方购票</a>：先确定入场时段，再安排涩谷晚餐。</li>
+                        <li>富士山一日游：核对团单集合点、结束地点和包含项目；地图仅示意富士山方向。</li>
+                        <li><a href="https://www.enoden.co.jp/" target="_blank" rel="noopener noreferrer">江之电</a>：按当天乘车次数比较单程票和一日券；JR、湘南单轨交通分别确认。</li>
+                        <li><a href="https://www.izukyu.co.jp/global_site/" target="_blank" rel="noopener noreferrer">伊豆急行</a> · <a href="https://omuroyama.com/access/" target="_blank" rel="noopener noreferrer">大室山交通</a>：确认列车、巴士及缆车运营，伊豆高原当天返回热海。</li>
+                        <li>热海站前足汤是「家康の湯」，不是截图中的「热海银汤」；<a href="https://www.city.atami.lg.jp/kanko/kankoshisetsu/1001839/1001841.html" target="_blank" rel="noopener noreferrer">开放情况以官方公告为准</a>。</li>
+                        <li>贯一酒店连住 2 晚：含餐、私汤及最晚晚餐时间以订单为准；10 月 2 日早上退房。</li>
+                    </ul>
+                </section>
+                ${renderPlaceNames()}
+            `;
+        }
+
+        function renderDetail(dayData) {
+            const detail = document.getElementById('detailContent');
+            const eventsHtml = dayData.events.map(e => `
+                <div class="timeline-item ${e.type || ''}">
+                    <div class="time">${e.time}</div>
+                    <div class="event">${e.event}</div>
+                    ${e.note ? `<div class="note">${e.note}</div>` : ''}
+                </div>
+            `).join('');
+
+            const hotelHtml = dayData.hotel
+                ? `
+                <div class="hotel-card">
+                    <div class="hotel-label">🏨 当晚住宿</div>
+                    <div class="hotel-name">${dayData.hotel.location} · ${dayData.hotel.nights}</div>
+                    <div class="hotel-info">${dayData.hotel.note}</div>
+                </div>
+                `
+                : `
+                <div class="no-hotel">
+                    当日不住宿，15:30 从成田机场起飞回国
+                </div>
+                `;
+
+            detail.innerHTML = `
+                <div class="detail-header">
+                    <div class="badge">${dayData.badge}</div>
+                    <h2>${dayData.title}</h2>
+                    <div class="meta">${dayData.date} · ${dayData.meta}</div>
+                </div>
+                ${hotelHtml}
+                <div class="timeline">
+                    ${eventsHtml}
+                </div>
+                ${renderPlaceNames(dayData.day)}
+            `;
+        }
+
+        function setActiveItem(mode, dayIndex = null) {
+            const overviewBtn = document.getElementById('overviewButton');
+            overviewBtn.classList.toggle('active', mode === 'overview');
+
+            document.querySelectorAll('.day-item').forEach(el => {
+                const isMatch = mode === 'day' && parseInt(el.dataset.index) === dayIndex;
+                el.classList.toggle('active', isMatch);
+            });
+        }
+
+        function selectOverview() {
+            document.querySelector('.container').classList.add('overview-mode');
+            setActiveItem('overview');
+            document.getElementById('detailPanelTitle').textContent = '📝 行程总览';
+            renderOverview();
+            document.getElementById('detailContent').scrollTop = 0;
+            map.invalidateSize();
+            updateMap(overview);
+        }
+
+        function selectDay(index) {
+            document.querySelector('.container').classList.remove('overview-mode');
+            setActiveItem('day', index);
+            const dayData = itinerary[index];
+            document.getElementById('detailPanelTitle').textContent = '📝 当日详情';
+            renderDetail(dayData);
+            document.getElementById('detailContent').scrollTop = 0;
+            map.invalidateSize();
+            updateMap(dayData);
+        }
+
+        // 初始化
+        initMap();
+        renderDayList();
+        bindOverviewButton();
+        selectOverview();
+    </script>
+    <script>
+        // 开发预览：检测文件修改后自动刷新页面
+        (function() {
+            let lastModified = null;
+            const checkInterval = 1000;
+
+            function checkUpdate() {
+                fetch(window.location.href, { method: 'HEAD', cache: 'no-cache' })
+                    .then(response => {
+                        const mod = response.headers.get('Last-Modified');
+                        if (lastModified && mod && lastModified !== mod) {
+                            window.location.reload();
+                        }
+                        lastModified = mod;
+                    })
+                    .catch(() => {});
+            }
+
+            checkUpdate();
+            setInterval(checkUpdate, checkInterval);
+        })();
+    </script>
+</body>
+</html>

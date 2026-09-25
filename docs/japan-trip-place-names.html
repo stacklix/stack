@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>日本关东之旅 · 景点日文名与假名</title>
+    <style>
+        :root {
+            color-scheme: light dark;
+            --bg: #f5f7fa;
+            --card: #ffffff;
+            --text-p1: #25324a;
+            --text-p2: #64748b;
+            --border: #e2e8f0;
+            --accent: #667eea;
+            --accent-soft: #eef2ff;
+            --header-a: #667eea;
+            --header-b: #764ba2;
+            --shadow: 0 12px 36px rgba(41, 54, 88, 0.09);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg: #10131b;
+                --card: #191e29;
+                --text-p1: #edf1fa;
+                --text-p2: #aeb8cc;
+                --border: #303849;
+                --accent: #94a3ff;
+                --accent-soft: #252d49;
+                --header-a: #3f4f9d;
+                --header-b: #533873;
+                --shadow: 0 12px 36px rgba(0, 0, 0, 0.25);
+            }
+        }
+
+        * { box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: var(--bg);
+            color: var(--text-p1);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+        }
+        .page-header {
+            background: linear-gradient(135deg, var(--header-a), var(--header-b));
+            color: white;
+            padding: max(18px, env(safe-area-inset-top)) 24px 18px;
+        }
+        .header-inner, main { width: min(1080px, calc(100% - 32px)); margin: 0 auto; }
+        .header-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 20px; }
+        .header-row > div { min-width: 0; }
+        h1 { margin: 0; font-size: clamp(22px, 4vw, 34px); line-height: 1.25; }
+        .subtitle { margin: 7px 0 0; font-size: 14px; opacity: .88; }
+        .back-link {
+            flex: none; color: white; text-decoration: none; font-size: 14px; font-weight: 650;
+            padding: 9px 13px; border: 1px solid rgba(255,255,255,.55); border-radius: 9px;
+            background: rgba(255,255,255,.12); white-space: nowrap;
+        }
+        main { padding: 24px 0 56px; }
+        .toolbar {
+            position: sticky; top: 0; z-index: 5; display: flex; gap: 12px; padding: 12px;
+            background: color-mix(in srgb, var(--bg) 88%, transparent); backdrop-filter: blur(12px);
+            border: 1px solid var(--border); border-radius: 14px; box-shadow: var(--shadow);
+        }
+        .search {
+            min-width: 0; flex: 1; height: 42px; padding: 0 14px; border: 1px solid var(--border);
+            border-radius: 10px; background: var(--card); color: var(--text-p1); font-size: 15px;
+        }
+        .day-filter {
+            height: 42px; padding: 0 12px; border: 1px solid var(--border); border-radius: 10px;
+            background: var(--card); color: var(--text-p1); font-size: 14px;
+        }
+        .intro { margin: 24px 2px 18px; color: var(--text-p2); line-height: 1.8; }
+        .day-section { margin-top: 18px; padding: 22px; border: 1px solid var(--border); border-radius: 16px; background: var(--card); box-shadow: var(--shadow); }
+        .day-heading { display: flex; align-items: baseline; gap: 10px; margin: 0 0 16px; }
+        .day-heading strong { color: var(--accent); font-size: 20px; }
+        .day-heading span { color: var(--text-p2); font-size: 13px; }
+        .name-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+        .name-card { min-width: 0; padding: 14px 16px; border: 1px solid var(--border); border-radius: 12px; background: var(--bg); }
+        .name-card .zh { color: var(--text-p2); font-size: 13px; margin-bottom: 6px; }
+        .name-card .ja { font-size: 18px; font-weight: 700; overflow-wrap: anywhere; }
+        .name-card .kana { display: block; margin-top: 4px; color: var(--accent); font-size: 14px; overflow-wrap: anywhere; }
+        .empty { display: none; padding: 56px 20px; text-align: center; color: var(--text-p2); }
+        .usage { margin-top: 22px; padding: 18px 20px; border-left: 4px solid var(--accent); border-radius: 10px; background: var(--accent-soft); line-height: 1.8; }
+        .usage strong { display: block; margin-bottom: 5px; }
+
+        @media (max-width: 700px) {
+            .page-header { padding-left: 16px; padding-right: 16px; }
+            .header-inner, main { width: min(100% - 24px, 1080px); }
+            .header-row { align-items: start; gap: 10px; }
+            h1 { font-size: 20px; }
+            .back-link { padding: 8px 10px; font-size: 12px; }
+            main { padding-top: 14px; }
+            .toolbar { flex-direction: column; gap: 8px; padding: 9px; }
+            .search, .day-filter { width: 100%; }
+            .day-section { padding: 16px 12px; border-radius: 14px; }
+            .name-grid { grid-template-columns: 1fr; }
+            .name-card { padding: 12px 14px; }
+        }
+    </style>
+</head>
+<body>
+    <header class="page-header">
+        <div class="header-inner header-row">
+            <div>
+                <h1>景点日文名与假名</h1>
+                <p class="subtitle">日本关东之旅 · 按行程快速查找</p>
+            </div>
+            <a class="back-link" href="japan-trip-itinerary.html">返回行程</a>
+        </div>
+    </header>
+    <main>
+        <div class="toolbar" aria-label="名称筛选">
+            <input id="search" class="search" type="search" placeholder="搜索中文、日文或假名" autocomplete="off">
+            <select id="dayFilter" class="day-filter" aria-label="按行程天数筛选">
+                <option value="all">全部行程</option>
+                <option value="1">第 1 天</option><option value="2">第 2 天</option><option value="3">第 3 天</option>
+                <option value="4">第 4 天</option><option value="5">第 5 天</option><option value="6">第 6 天</option><option value="7">第 7 天</option>
+            </select>
+        </div>
+        <p class="intro">中文名用于快速识别；日文名适合复制到地图、购票网站或直接出示；假名用于问路和确认读音。片假名名称保留原有片假名写法。</p>
+        <div id="list"></div>
+        <div id="empty" class="empty">没有找到匹配的名称。</div>
+        <aside class="usage"><strong>问路时可以这样说</strong><span lang="ja">すみません、鶴岡八幡宮（つるがおかはちまんぐう）へはどう行けばいいですか。</span><br>不好意思，请问去鹤冈八幡宫怎么走？</aside>
+    </main>
+    <script>
+        const days = {
+            1: ['抵达东京', [['成田国际机场','成田国際空港','なりたこくさいくうこう'],['三井花园饭店上野','三井ガーデンホテル上野','みついガーデンホテルうえの'],['上野','上野','うえの'],['京成上野站','京成上野駅','けいせいうえのえき'],['阿美横丁','アメ横','アメよこ']]],
+            2: ['东京市内', [['上野公园','上野恩賜公園','うえのおんしこうえん'],['不忍池','不忍池','しのばずのいけ'],['上野东照宫','上野東照宮','うえのとうしょうぐう'],['秋叶原','秋葉原','あきはばら'],['银座','銀座','ぎんざ'],['涩谷','渋谷','しぶや'],['忠犬八公像','忠犬ハチ公像','ちゅうけんハチこうぞう'],['涩谷观景台','SHIBUYA SKY','シブヤスカイ']]],
+            3: ['富士山', [['富士山','富士山','ふじさん']]],
+            4: ['镰仓与江之岛', [['大船站','大船駅','おおふなえき'],['湘南单轨电车','湘南モノレール','しょうなんモノレール'],['湘南江之岛站','湘南江の島駅','しょうなんえのしまえき'],['江之岛','江の島','えのしま'],['镰仓高校前','鎌倉高校前駅','かまくらこうこうまええき'],['七里滨','七里ヶ浜','しちりがはま'],['长谷寺','長谷寺','はせでら'],['高德院大佛','高徳院・鎌倉大仏','こうとくいん・かまくらだいぶつ'],['小町通','小町通り','こまちどおり'],['鹤冈八幡宫','鶴岡八幡宮','つるがおかはちまんぐう'],['镰仓站','鎌倉駅','かまくらえき'],['江之电','江ノ電','えのでん']]],
+            5: ['东京 → 热海', [['东京站','東京駅','とうきょうえき'],['热海站','熱海駅','あたみえき'],['贯一酒店','ホテル貫一','ホテルかんいち'],['家康之汤','家康の湯','いえやすのゆ'],['热海银座商店街','熱海銀座商店街','あたみぎんざしょうてんがい'],['热海阳光海滩','熱海サンビーチ','あたみサンビーチ']]],
+            6: ['伊豆高原', [['伊东站','伊東駅','いとうえき'],['伊豆高原站','伊豆高原駅','いずこうげんえき'],['大室山','大室山','おおむろやま'],['城崎海岸','城ヶ崎海岸','じょうがさきかいがん'],['门胁吊桥','門脇つり橋','かどわきつりばし'],['金目鲷','金目鯛','きんめだい']]],
+            7: ['热海 → 成田机场', [['热海站','熱海駅','あたみえき'],['东京站','東京駅','とうきょうえき'],['成田特快','成田エクスプレス','なりたエクスプレス'],['成田国际机场','成田国際空港','なりたこくさいくうこう']]]
+        };
+        const list = document.querySelector('#list');
+        const search = document.querySelector('#search');
+        const dayFilter = document.querySelector('#dayFilter');
+        const empty = document.querySelector('#empty');
+
+        function render() {
+            const query = search.value.trim().toLocaleLowerCase('ja');
+            const selected = dayFilter.value;
+            let count = 0;
+            list.innerHTML = Object.entries(days).filter(([day]) => selected === 'all' || selected === day).map(([day, [title, names]]) => {
+                const shown = names.filter(name => !query || name.join(' ').toLocaleLowerCase('ja').includes(query));
+                if (!shown.length) return '';
+                count += shown.length;
+                return `<section class="day-section"><h2 class="day-heading"><strong>第 ${day} 天</strong><span>${title}</span></h2><div class="name-grid">${shown.map(([zh, ja, kana]) => `<article class="name-card"><div class="zh">${zh}</div><div class="ja" lang="ja">${ja}</div><span class="kana" lang="ja">${kana}</span></article>`).join('')}</div></section>`;
+            }).join('');
+            empty.style.display = count ? 'none' : 'block';
+        }
+        search.addEventListener('input', render);
+        dayFilter.addEventListener('change', render);
+        render();
+    </script>
+</body>
+</html>
